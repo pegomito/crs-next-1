@@ -12,10 +12,13 @@ import {
   ButtonGroup,
   IconButton,
   HStack,
-  VStack
+  VStack,
+  InputGroup
 } from "@chakra-ui/react";
+
 import { MdEdit, MdChevronRight, MdChevronLeft } from "react-icons/md";
 import { FiActivity } from "react-icons/fi";
+import { FaSearch } from "react-icons/fa";
 import { FaDeleteLeft } from "react-icons/fa6";
 import React, { useState } from "react";
 
@@ -25,11 +28,15 @@ export default function Tasks() {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [editIndex, setEditIndex] = useState(null); 
+  const [search, setSearch] = useState("");
 
   const indexUltimoItem = currentPage * itemsPerPage;
   const indexPrimeiroItem = indexUltimoItem - itemsPerPage; 
   const tasksAtuais = tasks.slice(indexPrimeiroItem, indexUltimoItem)
 
+  const filteredTasks = tasks.filter((task) =>
+    task.toLowerCase().includes(search.toLowerCase())
+  );
 
   const criarTask = () => {
     if (!input.trim()) {
@@ -65,11 +72,17 @@ export default function Tasks() {
 
   return (
     <Box p={8} bg="gray.100" borderRadius="md" boxShadow="lg">
-      <Flex mb={4} spacing={4}>
         <Heading mb={4}>Lista de Tarefas
       <FiActivity />
       </Heading>
-      </Flex>
+  <Input 
+    placeholder="Pesquisar Tarefa" 
+    variant="outline"     
+    backgroundColor="white"   
+    mb={4} 
+    value={search} 
+    onChange={(e) => setSearch(e.target.value)}
+  />
       <Flex mb={4}>
         <Input
           p={5}
