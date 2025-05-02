@@ -1,4 +1,8 @@
 "use client";
+
+import TabelaCrud from "@/components/TabelaCrud";
+import InputCreate from "@/components/InputCreate";
+
 import {
   Box,
   Button,
@@ -13,14 +17,19 @@ import {
   IconButton,
   HStack,
   VStack,
-  InputGroup
+  InputGroup,
+  GridItem,
+  Grid
 } from "@chakra-ui/react";
 
 import { MdEdit, MdChevronRight, MdChevronLeft } from "react-icons/md";
 import { FiActivity } from "react-icons/fi";
 import { FaSearch } from "react-icons/fa";
 import { FaDeleteLeft } from "react-icons/fa6";
-import React, { useState } from "react";
+import { BsAlarm } from "react-icons/bs";
+import React, { useState, useEffect } from "react";
+import InputPesquisa from "@/components/InputPesquisa";
+import { MdMoreTime } from "react-icons/md";
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
@@ -28,23 +37,51 @@ export default function Tasks() {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [editIndex, setEditIndex] = useState(null); 
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');	
 
-  const indexUltimoItem = currentPage * itemsPerPage;
-  const indexPrimeiroItem = indexUltimoItem - itemsPerPage; 
-  const tasksAtuais = tasks.slice(indexPrimeiroItem, indexUltimoItem)
-
-  const filteredTasks = tasks.filter((task) =>
-    task.toLowerCase().includes(search.toLowerCase())
+  const filteredTasks = tasks.filter(task =>
+    task.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const indexUltimoItem = currentPage * itemsPerPage;
+  const indexPrimeiroItem = indexUltimoItem - itemsPerPage;
+  const tasksAtuais = filteredTasks.slice(indexPrimeiroItem, indexUltimoItem);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  // useEffect(() => {
+  //   const buscarCargo = async () => {
+  //     try {  
+  //       const response = await ap
+  //     }
+  //   }
+  // })
 
   const criarTask = () => {
     if (!input.trim()) {
-      alert("Nada foi digitado");   
+      alert("Nada foi digitado");
       return;
     }
-    setTasks([...tasks, input]);
+
+    if (editIndex !== null) {
+
+      const tasksAtualizado = tasks.map((task, i) =>
+        i === editIndex ? input : task
+      );
+      setTasks(tasksAtualizado);
+      setEditIndex(null); 
+    } else {
+      
+      setTasks([...tasks, input]);
+    }
+
     setInput("");
+  };
+
+  const editarTask = (index) => {
+    setInput(tasks[index]); 
+    setEditIndex(index); 
   };
 
   const excluirTask = (index) => {
@@ -52,133 +89,68 @@ export default function Tasks() {
     setTasks(taskExcluido);
   };
 
-  const editarTask = (index) => {
-    setEditIndex(index); 
-  };
-
-  const salvarEdicao = (index, novoValor) => {
-    if (!novoValor.trim()) {
-      return;
-    }
-    const tasksAtualizado = tasks.map((task, i) => {
-      if (i === index) {
-        return novoValor; 
-      }
-      return task;
-    });
-    setTasks(tasksAtualizado);
-    setEditIndex(null); 
-  };
-
   return (
-    <Box p={8} bg="gray.100" borderRadius="md" boxShadow="lg">
-        <Heading mb={4}>Lista de Tarefas
-      <FiActivity />
-      </Heading>
-  <Input 
-    placeholder="Pesquisar Tarefa" 
-    variant="outline"     
-    backgroundColor="white"   
-    mb={4} 
-    value={search} 
-    onChange={(e) => setSearch(e.target.value)}
-  />
-      <Flex mb={4}>
-        <Input
-          p={5}
-          variant="outline"
-          mr={3}
-          placeholder="Qual sua Tarefa do dia?"
-          value={input}
-          onChange={(valor) => setInput(valor.target.value)}
-        />
-        <Button onClick={criarTask}>Adicionar</Button>
+    <Box p={8}  borderRadius="md" boxShadow="lg">
+      <Flex justifyContent="center">
+         <Heading mb={12} gapX={2} display='flex'>CRUD Cargos <MdMoreTime/></Heading>
+     </Flex>
+    <Flex justifyContent="center">
+      <Grid
+      templateRows="repeat(2, 1fr)"
+      templateColumns="repeat(2, 1fr)"
+      gap={4}
+      >
+        <GridItem rowSpan={3}>
+          <InputPesquisa
+            searchTerm={searchTerm}
+            SetSeachTerm={setSearchTerm}
+
+          />
+        </GridItem>
+        <GridItem rowSpan={1}>
+          <InputCreate
+            input={input}
+            setInput={setInput}
+            submit={criarTask}
+            editIndex={editIndex}
+          />
+        </GridItem>
+      </Grid>
       </Flex>
       <Stack style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Table.Root width="50%" mr={3} borderRadius="md" boxShadow="lg">
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeader fontWeight="bold" textStyle="md">Tarefa</Table.ColumnHeader>
-              <Table.ColumnHeader fontWeight="bold" textStyle="md">Editar/Cancelar</Table.ColumnHeader>
-            </Table.Row>
-          </Table.Header>
-          
-          <Table.Body>
-          {tasksAtuais.map((task, i) => (
-              <Table.Row key={i} striped>
-                <Table.Cell>
-                  {editIndex === i + indexPrimeiroItem ? ( 
-                    <Input
-                      value={task}
-                      onChange={(e) => {
-                        const tasksAtualizado = [...tasks];
-                        tasksAtualizado[i + indexPrimeiroItem] = e.target.value; 
-                        setTasks(tasksAtualizado);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          salvarEdicao(i + indexPrimeiroItem, e.target.value); 
-                        }
-                      }}
-                      autoFocus
-                    />
-                  ) : (
-                    <Text fontWeight="bold">{task}</Text>
-                  )}
-                </Table.Cell>
-
-
-                <Table.Cell textAlign="center" fontWeight="bold">
-                  <Stack direction="row" spacing={4}>
-                    <Button
-                      variant="outline"
-                      onClick={() => editarTask(i + indexPrimeiroItem)}
-                    >
-                      <MdEdit color="blue" size={20} />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => excluirTask(i + indexPrimeiroItem)} 
-                    >
-                      <FaDeleteLeft color="red" size={20} />
-                    </Button>
-                  </Stack>
-                </Table.Cell>
-              </Table.Row>
-            ))} 
-          </Table.Body>
-        </Table.Root>
-        <Pagination.Root 
-          count={tasks.length} 
-          pageSize={itemsPerPage} 
+        <TabelaCrud
+          items={tasksAtuais}
+          headers={['Tarefa']}
+          onEdit={editarTask}
+          onDelete={excluirTask}
+          acoes={true}
+        />
+        <Pagination.Root
+          count={filteredTasks.length}
+          pageSize={itemsPerPage}
           defaultPage={1}
           page={currentPage}
           onPageChange={(page) => setCurrentPage(page)}
         >
           <ButtonGroup variant="ghost" size="sm">
             <Pagination.PrevTrigger asChild>
-              <IconButton
-                onClick={() => setCurrentPage(currentPage - 1)}
-              >
+              <IconButton onClick={() => setCurrentPage(currentPage - 1)}>
                 <MdChevronLeft />
               </IconButton>
             </Pagination.PrevTrigger>
-
             <Pagination.Items
               render={(page) => (
-                <IconButton 
-                  onClick={() => setCurrentPage(page.value)} 
+                <IconButton
+                  key={page.value}
+                  onClick={() => setCurrentPage(page.value)}
                   variant={{ base: "ghost", _selected: "outline" }}
                 >
                   {page.value}
                 </IconButton>
               )}
             />
-
             <Pagination.NextTrigger asChild>
-              <IconButton
-                onClick={() => setCurrentPage(currentPage + 1)}
-              >
+              <IconButton onClick={() => setCurrentPage(currentPage + 1)}>
                 <MdChevronRight />
               </IconButton>
             </Pagination.NextTrigger>

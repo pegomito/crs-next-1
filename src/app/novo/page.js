@@ -9,34 +9,42 @@ import {
   Table,
   Pagination,
   ButtonGroup,
-  IconButton
-} from "@chakra-ui/react"
-import { useState } from "react";
-import { MdAdd, MdDelete, MdMode, MdCheck, MdChevronRight, MdChevronLeft   } from "react-icons/md";
+  IconButton,
+} from "@chakra-ui/react";
+
+import { useState, useEffect } from "react";
+import { MdAdd, MdDelete, MdMode, MdCheck, MdChevronRight, MdChevronLeft } from "react-icons/md";
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState('');
+  const [searchTerm, setSearchTerm] = useState(''); 
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [editingIndex, setEditingIndex] = useState(null);
 
   const indexUltimoItem = currentPage * itemsPerPage;
   const indexPrimeiroItem = indexUltimoItem - itemsPerPage;
-  const tasksAtuais = tasks.slice(indexPrimeiroItem, indexUltimoItem)
+
+
+  const filteredTasks = tasks.filter((task) =>
+    task.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const tasksAtuais = filteredTasks.slice(indexPrimeiroItem, indexUltimoItem);
 
   const criarTask = () => {
     if (!input.trim()) return;	
     if (editingIndex !== null) {
-      const tasksAtualizadas = [...tasks]
-      tasksAtualizadas[editingIndex] = input
-      setTasks(tasksAtualizadas)
-      setEditingIndex(null)
+      const tasksAtualizadas = [...tasks];
+      tasksAtualizadas[editingIndex] = input;
+      setTasks(tasksAtualizadas);
+      setEditingIndex(null);
     } else {
       setTasks([...tasks, input]);
     }
     setInput('');
-  }
+  };
 
   const editarTask = (index) => {
     setInput(tasks[index]);
@@ -44,20 +52,33 @@ export default function Tasks() {
   };
 
   const excluirTask = (index) => {
-    const taskExluido = tasks.filter((_, i) => i != index);
-    setTasks(taskExluido)
-  }
+    const taskExcluido = tasks.filter((_, i) => i !== index);
+    setTasks(taskExcluido);
+  };
+
+  useEffect(() => {
+    setCurrentPage(1); 
+  }, [searchTerm]);
 
   return (
     <Box p={8}>
       <Heading mb={4}> Lista de Tarefas </Heading>
       <Flex mb={4}>
         <Input
-          placeholder="Digite o nome de uma terefa!"
+          placeholder="Pesquisar tarefa"
+          variant="subtle"
+          mr={2}
+          value={searchTerm} 
+          onChange={(e) => setSearchTerm(e.target.value)} 
+        />
+      </Flex>
+      <Flex mb={4}>
+        <Input
+          placeholder="Digite o nome de uma tarefa!"
           variant="subtle"
           mr={2}
           value={input}
-          onChange={(valor) => setInput(valor.target.value)}
+          onChange={(e) => setInput(e.target.value)}
         />
         <Button 
           onClick={criarTask}
@@ -105,7 +126,7 @@ export default function Tasks() {
         </Table.Root>
 
         <Pagination.Root 
-          count={tasks.length} 
+          count={filteredTasks.length} 
           pageSize={itemsPerPage} 
           defaultPage={1}
           page={currentPage}
@@ -142,5 +163,5 @@ export default function Tasks() {
         </Pagination.Root>
       </Stack>
     </Box>
-  )
+  );
 }
