@@ -1,6 +1,6 @@
 import { Input } from "@chakra-ui/react"
 
-export default function InputPesquisa({ searchTerm, SetSeachTerm}) {
+export default function InputPesquisa({ searchTerm, SetSeachTerm }) {
   return (
     <Input
       placeholder="Pesquisar cargos..."

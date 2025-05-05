@@ -3,7 +3,7 @@ import { MdDelete, MdMode } from "react-icons/md";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useState } from "react";
 
-export default function TabelaCrud({ items, headers, onEdit, onDelete, acoes }) {
+export default function TabelaCrud({ items, headers, onEdit, onDelete, acoes, }) {
   const [editId, setEditId] = useState(null); 
   const [editedValue, setEditedValue] = useState("");
 

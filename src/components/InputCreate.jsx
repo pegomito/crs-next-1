@@ -1,4 +1,4 @@
-import { Flex, Input, Button, Dialog, Heading, Text, Box } from "@chakra-ui/react";
+import { Flex, Input, Button, Dialog, Heading, Text, Box, Portal, CloseButton } from "@chakra-ui/react";
 import { MdCheck, MdAdd } from "react-icons/md";
 
 
@@ -23,28 +23,21 @@ import { MdCheck, MdAdd } from "react-icons/md";
 //   );
 // }
 
-export default function InputCreate({ input, setInput, submit, editIndex, loadingSave, openDialog, setOpenDialog }) {
+export default function InputCreate({ input, setInput, submit, editIndex, loadingSave, open, setOpen }) {
     return (
-        <Dialog.Root>
+        <Dialog.Root open={open.open} onOpenChange={setOpen} placement="top" motionPreset="slide-in-bottom">
             <Dialog.Trigger asChild>
                 <Button
                     colorScheme="teal"
                 >Adicionar Cargo +</Button>
             </Dialog.Trigger>
-
-            <Dialog.Backdrop bg="blackAlpha.600" />
-
+    <Portal>
+        <Dialog.Backdrop bg="blackAlpha.600" />
             <Dialog.Positioner>
                 <Dialog.Content p={4}>
-                    <Dialog.CloseTrigger asChild>
-                        <Button position="absolute" size="sm">
-                            X
-                        </Button>
-                    </Dialog.CloseTrigger>
                     <Dialog.Header>
                         <Dialog.Title>
                             <Heading size="md">Qual o nome do cargo?</Heading>
-                            {/* <Heading size="md">Qual o nome da sua Tarefa?</Heading> */}
                         </Dialog.Title>
                     </Dialog.Header>
 
@@ -52,7 +45,6 @@ export default function InputCreate({ input, setInput, submit, editIndex, loadin
 
                         <Flex mb={4}>
                             <Input
-                                //placeholder="Ex: Descascar mandioca (18:00)"
                                 placeholder="Ex: Pipoqueiro Sênior"
                                 variant="subtle"
                                 mr={2}
@@ -82,9 +74,14 @@ export default function InputCreate({ input, setInput, submit, editIndex, loadin
 
                         </Box>
                     </Dialog.Footer>
+                    
+                    <Dialog.CloseTrigger asChild>
+                        <CloseButton size='sm' />
+                    </Dialog.CloseTrigger>
                 </Dialog.Content>
             </Dialog.Positioner>
-        </Dialog.Root>
+        </Portal>
+    </Dialog.Root>
     );
 
 }

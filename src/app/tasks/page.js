@@ -4,7 +4,7 @@ import TabelaCrud from "@/components/TabelaCrud";
 import InputCreate from "@/components/InputCreate";
 import api from "@/utils/axios";
 import { toaster } from "@/components/ui/toaster"
-
+import {  } from "@chakra-ui/react"
 
 import {
   Box,
@@ -18,11 +18,12 @@ import {
   IconButton,
   HStack,
   VStack,
-  InputGroup,
+  InputGroup, 
   GridItem,
   Grid,
   createSystem,
-   defineConfig 
+  defineConfig, 
+  defineLayerStyles  
 } from "@chakra-ui/react";
 
 import { MdChevronRight, MdChevronLeft } from "react-icons/md";
@@ -37,10 +38,9 @@ export default function Tasks() {
   const [currentPage, setCurrentPage] = useState(1);
   const [editIndex, setEditIndex] = useState(null); 
   const [searchTerm, setSearchTerm] = useState('');	
-  const [openDialog, setOpenDialog] = useState(false);
-  const closeDialog = () => {
-    setOpenDialog(false)
-  }
+  const [openDialog, setOpenDialog] = useState({open: false});
+
+
   const [loadingSave, setLoadingSave] = useState(false);
   
   const buscarCargo = async () => {
@@ -97,7 +97,7 @@ export default function Tasks() {
           type: "success",
         });
         await buscarCargo();
-        
+        setOpenDialog({open: false});
     } catch (error) {
       toaster.create({
         title: "Erro ao criar cargo",
@@ -134,7 +134,7 @@ export default function Tasks() {
       setTasks(tasksAtualizado);
   
       toaster.create({
-        title: "Cargo atualizado com sucesso",
+        title: "Cargo foi atualizado com sucesso!",
         description: `Cargo foi atualizado para ${task.descricao}`,
         type: "success",
       });
@@ -206,8 +206,8 @@ export default function Tasks() {
             submit={criarTask}
             editIndex={editIndex}
             loadingSave={loadingSave}
-            //closeDialog={closeDialog}
-            //open={openDialog}
+            setOpen={setOpenDialog}
+            open={openDialog}
           />
         </GridItem>
       </Grid>
