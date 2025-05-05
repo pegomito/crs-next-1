@@ -2,6 +2,9 @@
 
 import TabelaCrud from "@/components/TabelaCrud";
 import InputCreate from "@/components/InputCreate";
+import api from "@/utils/axios";
+import { toaster } from "@/components/ui/toaster"
+
 
 import {
   Box,
@@ -10,8 +13,6 @@ import {
   Heading,
   Input,
   Stack,
-  Table,
-  Text,
   Pagination,
   ButtonGroup,
   IconButton,
@@ -19,14 +20,12 @@ import {
   VStack,
   InputGroup,
   GridItem,
-  Grid
+  Grid,
+  createSystem,
+   defineConfig 
 } from "@chakra-ui/react";
 
-import { MdEdit, MdChevronRight, MdChevronLeft } from "react-icons/md";
-import { FiActivity } from "react-icons/fi";
-import { FaSearch } from "react-icons/fa";
-import { FaDeleteLeft } from "react-icons/fa6";
-import { BsAlarm } from "react-icons/bs";
+import { MdChevronRight, MdChevronLeft } from "react-icons/md";
 import React, { useState, useEffect } from "react";
 import InputPesquisa from "@/components/InputPesquisa";
 import { MdMoreTime } from "react-icons/md";
@@ -38,61 +37,154 @@ export default function Tasks() {
   const [currentPage, setCurrentPage] = useState(1);
   const [editIndex, setEditIndex] = useState(null); 
   const [searchTerm, setSearchTerm] = useState('');	
+  const [openDialog, setOpenDialog] = useState(false);
+  const closeDialog = () => {
+    setOpenDialog(false)
+  }
+  const [loadingSave, setLoadingSave] = useState(false);
+  
+  const buscarCargo = async () => {
+      try {
+        const response = await api.get('/cargos')
+        setTasks(response.data.data);
+      } catch (error) {
+        
+      }
+    }
+  useEffect(() => {
+    buscarCargo();
+  }, [])
+
+  // const filteredTasks = tasks.filter(task =>
+  //   task.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   const filteredTasks = tasks.filter(task =>
-    task.toLowerCase().includes(searchTerm.toLowerCase())
+    task.descricao.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
   const indexUltimoItem = currentPage * itemsPerPage;
-  const indexPrimeiroItem = indexUltimoItem - itemsPerPage;
+  const indexPrimeiroItem = indexUltimoItem - itemsPerPage;   
   const tasksAtuais = filteredTasks.slice(indexPrimeiroItem, indexUltimoItem);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  // useEffect(() => {
-  //   const buscarCargo = async () => {
-  //     try {  
-  //       const response = await ap
-  //     }
-  //   }
-  // })
-
-  const criarTask = () => {
+  const criarTask = async () => {
     if (!input.trim()) {
       alert("Nada foi digitado");
       return;
     }
 
-    if (editIndex !== null) {
+    try {
+      if (editIndex !== null) {
 
-      const tasksAtualizado = tasks.map((task, i) =>
-        i === editIndex ? input : task
-      );
-      setTasks(tasksAtualizado);
-      setEditIndex(null); 
-    } else {
-      
-      setTasks([...tasks, input]);
+        const tasksAtualizado = tasks.map((task, i) =>
+          i === editIndex ? input : task
+        );
+        setTasks(tasksAtualizado);
+        setEditIndex(null); 
+      } 
+        
+        //setTasks([...tasks, input]);
+        const response = await api.post('/cargos', {
+          descricao: input
+        });
+        toaster.create({
+          title: "Cargo criado com sucesso",
+          description: `Cargo ${input} foi criado `,
+          type: "success",
+        });
+        await buscarCargo();
+        
+    } catch (error) {
+      toaster.create({
+        title: "Erro ao criar cargo",
+          description: `Erro = ${error}`,
+          type: "error",
+      });
     }
 
     setInput("");
+  };  
+
+  // const editarTask = async ({
+
+  // }) => {
+   
+  //   // setInput(tasks[index]); 
+  //   // setEditIndex(index); 
+  // };
+
+  const editarTask = async (task) => {
+    if (!task.descricao.trim()) {
+      alert("O campo de descrição está vazio.");
+      return;
+    }
+  
+    try {
+      const response = await api.patch(`/cargos/${task.id}`, {
+        descricao: task.descricao, 
+      });
+  
+      const tasksAtualizado = tasks.map((t) =>
+        t.id === task.id ? { ...t, descricao: task.descricao } : t
+      );
+      setTasks(tasksAtualizado);
+  
+      toaster.create({
+        title: "Cargo atualizado com sucesso",
+        description: `Cargo foi atualizado para ${task.descricao}`,
+        type: "success",
+      });
+    } catch (error) {
+      toaster.create({
+        title: "Erro ao atualizar cargo",
+        description: `Erro = ${error.message}`,
+        type: "error",
+      });
+    }
   };
 
-  const editarTask = (index) => {
-    setInput(tasks[index]); 
-    setEditIndex(index); 
-  };
+  // const excluirTask = (index) => {
+  //   const taskExcluido = tasks.filter((_, i) => i !== index);
+  //   setTasks(taskExcluido);
+    
+  // };
 
-  const excluirTask = (index) => {
-    const taskExcluido = tasks.filter((_, i) => i !== index);
-    setTasks(taskExcluido);
-  };
+  const excluirTask = async (id) => {
+    try {
+      await api.delete(`/cargos/${id}`);
 
+      const tasksAtualizado = tasks.filter((task) => task.id !== id);
+      setTasks(tasksAtualizado);
+  
+      toaster.create({
+        title: "cargo excluído com sucesso",
+        description: `cargo com ID ${id} foi removido.`,
+        type: "success",
+      });
+    } catch (error) {
+      toaster.create({
+        title: "erro ao excluir cargo",
+        description: `Erro = ${error.message}`,
+        type: "error",
+      });
+    }
+  };
+  
   return (
-    <Box p={8}  borderRadius="md" boxShadow="lg">
+    <Box 
+    p={8}  
+    borderRadius="md" 
+    boxShadow="lg"
+    data-state="open"
+    animationDuration="slow"
+  animationStyle={{ _open: "slide-fade-in", _closed: "slide-fade-out" }}
+    >
       <Flex justifyContent="center">
-         <Heading mb={12} gapX={2} display='flex'>CRUD Cargos <MdMoreTime/></Heading>
+         <Heading mb={12} gapX={2} display='flex'> CRUD Cargos <MdMoreTime/></Heading>
      </Flex>
     <Flex justifyContent="center">
       <Grid
@@ -113,6 +205,9 @@ export default function Tasks() {
             setInput={setInput}
             submit={criarTask}
             editIndex={editIndex}
+            loadingSave={loadingSave}
+            //closeDialog={closeDialog}
+            //open={openDialog}
           />
         </GridItem>
       </Grid>
@@ -120,10 +215,14 @@ export default function Tasks() {
       <Stack style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         <TabelaCrud
           items={tasksAtuais}
-          headers={['Tarefa']}
           onEdit={editarTask}
           onDelete={excluirTask}
           acoes={true}
+           headers={[
+            'ID',
+            'Descrição'
+          ]}
+
         />
         <Pagination.Root
           count={filteredTasks.length}

@@ -23,17 +23,19 @@ import { MdCheck, MdAdd } from "react-icons/md";
 //   );
 // }
 
-export default function InputCreate({ input, setInput, submit, editIndex }) {
+export default function InputCreate({ input, setInput, submit, editIndex, loadingSave, openDialog, setOpenDialog }) {
     return (
         <Dialog.Root>
             <Dialog.Trigger asChild>
-                <Button colorScheme="teal">Adicionar Tarefa +</Button>
+                <Button
+                    colorScheme="teal"
+                >Adicionar Cargo +</Button>
             </Dialog.Trigger>
 
             <Dialog.Backdrop bg="blackAlpha.600" />
 
             <Dialog.Positioner>
-                <Dialog.Content  p={4}>
+                <Dialog.Content p={4}>
                     <Dialog.CloseTrigger asChild>
                         <Button position="absolute" size="sm">
                             X
@@ -41,19 +43,22 @@ export default function InputCreate({ input, setInput, submit, editIndex }) {
                     </Dialog.CloseTrigger>
                     <Dialog.Header>
                         <Dialog.Title>
-                            <Heading size="md">Qual o nome da sua Tarefa?</Heading>
+                            <Heading size="md">Qual o nome do cargo?</Heading>
+                            {/* <Heading size="md">Qual o nome da sua Tarefa?</Heading> */}
                         </Dialog.Title>
                     </Dialog.Header>
 
-                    <Dialog.Body>   
+                    <Dialog.Body>
 
                         <Flex mb={4}>
                             <Input
-                                placeholder="Ex: Descascar mandioca (18:00)"
+                                //placeholder="Ex: Descascar mandioca (18:00)"
+                                placeholder="Ex: Pipoqueiro Sênior"
                                 variant="subtle"
                                 mr={2}
                                 value={input}
                                 onChange={(valor) => setInput(valor.target.value)}
+
                             />
                         </Flex>
 
@@ -64,15 +69,17 @@ export default function InputCreate({ input, setInput, submit, editIndex }) {
                             <Dialog.CloseTrigger asChild>
                                 <Button variant="ghost"></Button>
                             </Dialog.CloseTrigger>
-                        
-                            <Button colorScheme="teal"
+
+                            <Button
+                                isLoading={loadingSave} loadingText="Salvando"
                                 onClick={submit}
+                                colorScheme="teal"
                                 background={editIndex !== null ? "blue" : "green"}
                                 color="white"
-                                >   
+                            >
                                 {editIndex !== null ? <MdCheck /> : <MdAdd />}
                             </Button>
-                            
+
                         </Box>
                     </Dialog.Footer>
                 </Dialog.Content>
