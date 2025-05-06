@@ -1,11 +1,13 @@
 "use client";
-
-import TabelaCrud from "@/components/TabelaCrud";
+// import TabelaCrudOriginal from "@/components/TabelaCrudOriginal";
+import TabelaCrudAll from "@/components/TabelaCrudAll";
 import InputCreate from "@/components/InputCreate";
 import api from "@/utils/axios";
 import { toaster } from "@/components/ui/toaster"
-import {  } from "@chakra-ui/react"
-
+import { MdChevronRight, MdChevronLeft } from "react-icons/md";
+import React, { useState, useEffect } from "react";
+import InputPesquisa from "@/components/InputPesquisa";
+import { MdMoreTime } from "react-icons/md";
 import {
   Box,
   Button,
@@ -26,12 +28,8 @@ import {
   defineLayerStyles  
 } from "@chakra-ui/react";
 
-import { MdChevronRight, MdChevronLeft } from "react-icons/md";
-import React, { useState, useEffect } from "react";
-import InputPesquisa from "@/components/InputPesquisa";
-import { MdMoreTime } from "react-icons/md";
 
-export default function Tasks() {
+export default function TasksCargo() {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -39,8 +37,6 @@ export default function Tasks() {
   const [editIndex, setEditIndex] = useState(null); 
   const [searchTerm, setSearchTerm] = useState('');	
   const [openDialog, setOpenDialog] = useState({open: false});
-
-
   const [loadingSave, setLoadingSave] = useState(false);
   
   const buscarCargo = async () => {
@@ -72,41 +68,44 @@ export default function Tasks() {
   }, [searchTerm]);
 
   const criarTask = async () => {
+    
+    console.log("Form Values:", formValues); 
+
     if (!input.trim()) {
       alert("Nada foi digitado");
       return;
     }
 
     try {
-      if (editIndex !== null) {
+      // if (editIndex !== null) {
 
-        const tasksAtualizado = tasks.map((task, i) =>
-          i === editIndex ? input : task
-        );
-        setTasks(tasksAtualizado);
-        setEditIndex(null); 
-      } 
+      //   const tasksAtualizado = tasks.map((task, i) =>
+      //     i === editIndex ? input : task
+      //   );
+      //   setTasks(tasksAtualizado);
+      //   setEditIndex(null); 
+      // } 
         
         //setTasks([...tasks, input]);
         const response = await api.post('/cargos', {
-          descricao: input
+          descricao: formValues.descricao,
         });
+    
         toaster.create({
           title: "Cargo criado com sucesso",
-          description: `Cargo ${input} foi criado `,
+          description: `Cargo ${formValues.descricao} foi criado.`,
           type: "success",
         });
-        await buscarCargo();
-        setOpenDialog({open: false});
-    } catch (error) {
-      toaster.create({
-        title: "Erro ao criar cargo",
-          description: `Erro = ${error}`,
+    
+        await buscarCargo(); 
+        setOpenDialog({ open: false }); 
+      } catch (error) {
+        toaster.create({
+          title: "Erro ao criar cargo",
+          description: `Erro = ${error.message}`,
           type: "error",
-      });
-    }
-
-    setInput("");
+        });
+      }
   };  
 
   // const editarTask = async ({
@@ -117,7 +116,7 @@ export default function Tasks() {
   //   // setEditIndex(index); 
   // };
 
-  const editarTask = async (task) => {
+  const editarCargo = async (task) => {
     if (!task.descricao.trim()) {
       alert("O campo de descrição está vazio.");
       return;
@@ -153,7 +152,7 @@ export default function Tasks() {
     
   // };
 
-  const excluirTask = async (id) => {
+  const excluirCargo = async (id) => {
     try {
       await api.delete(`/cargos/${id}`);
 
@@ -199,21 +198,21 @@ export default function Tasks() {
 
           />
         </GridItem>
-        <GridItem rowSpan={1}>
-          <InputCreate
-            input={input}
-            setInput={setInput}
-            submit={criarTask}
-            editIndex={editIndex}
-            loadingSave={loadingSave}
-            setOpen={setOpenDialog}
-            open={openDialog}
-          />
-        </GridItem>
+          <GridItem rowSpan={1}>
+            <InputCreate
+              fields={[
+                { name: "descricao", placeholder: "Ex: Pipoqueiro Sênior" },
+              ]}
+              submit={(formValues) => criarTask(formValues)}
+              editIndex={editIndex}
+              loadingSave={loadingSave}
+              open={openDialog}
+              setOpen={setOpenDialog} />
+          </GridItem>
       </Grid>
       </Flex>
       <Stack style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <TabelaCrud
+        {/* <TabelaCrudOriginal
           items={tasksAtuais}
           onEdit={editarTask}
           onDelete={excluirTask}
@@ -222,7 +221,16 @@ export default function Tasks() {
             'ID',
             'Descrição'
           ]}
-
+        /> */}
+        <TabelaCrudAll
+          items={tasksAtuais}
+          headers={[
+            { key: "id", label: "ID" },
+            { key: "descricao", label: "Descrição" },
+          ]}
+          onEdit={editarCargo}
+          onDelete={excluirCargo}
+          acoes={true}
         />
         <Pagination.Root
           count={filteredTasks.length}
