@@ -83,7 +83,7 @@
 
 // }
 
-import { Flex, Input, Button, Dialog, Heading, Box, Portal, CloseButton } from "@chakra-ui/react";
+import { Flex, Input, Button, Dialog, Heading, Text, Box, Portal, CloseButton } from "@chakra-ui/react";
 import { MdCheck, MdAdd } from "react-icons/md";
 import { useState } from "react";
 
@@ -115,13 +115,13 @@ export default function InputCreate({ fields, submit, editIndex, loadingSave, op
         <Dialog.Backdrop bg="blackAlpha.600" />
         <Dialog.Positioner>
           <Dialog.Content p={4}>
-            <Dialog.Header>
-              <Dialog.Title>
-                <Heading size="md">
-                  {editIndex !== null ? "Editar Registro" : "Adicionar Novo Registro"}
-                </Heading>
-              </Dialog.Title>
-            </Dialog.Header>
+                      <Dialog.Header>
+                          <Dialog.Title>
+                              <Text fontSize="lg" fontWeight="bold">
+                                  {editIndex !== null ? "Editar Registro" : "Adicionar Novo Registro"}
+                              </Text>
+                          </Dialog.Title>
+                      </Dialog.Header>
             <Dialog.Body>
               {Array.isArray(fields) &&
                 fields.map((field) => (
