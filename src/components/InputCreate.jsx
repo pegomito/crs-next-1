@@ -83,7 +83,7 @@
 
 // }
 
-import { Flex, Input, Button, Dialog, Heading, Text, Box, Portal, CloseButton } from "@chakra-ui/react";
+import { Flex, Input, Button, Dialog, Heading, Text, Box, Portal, CloseButton,} from "@chakra-ui/react";
 import { MdCheck, MdAdd } from "react-icons/md";
 import { useState } from "react";
 
@@ -108,7 +108,8 @@ export default function InputCreate({ fields, submit, editIndex, loadingSave, op
     <Dialog.Root open={open.open} onOpenChange={dinamicChange} placement="top" motionPreset="slide-in-bottom">
       <Dialog.Trigger asChild>
         <Button colorScheme="teal">
-          {editIndex !== null ? "Editar Registro" : "Adicionar Registro"}
+          {/* {editIndex !== null ? "Editar Registro" : "Adicionar Registro"} */}
+          Adicionar Registro
         </Button>
       </Dialog.Trigger>
       <Portal>
@@ -118,7 +119,8 @@ export default function InputCreate({ fields, submit, editIndex, loadingSave, op
                       <Dialog.Header>
                           <Dialog.Title>
                               <Text fontSize="lg" fontWeight="bold">
-                                  {editIndex !== null ? "Editar Registro" : "Adicionar Novo Registro"}
+                                  {/* {editIndex !== null ? "Editar Registro" : "Adicionar Novo Registro"} */}
+                                Adicionar Registro
                               </Text>
                           </Dialog.Title>
                       </Dialog.Header>
@@ -126,6 +128,9 @@ export default function InputCreate({ fields, submit, editIndex, loadingSave, op
               {Array.isArray(fields) &&
                 fields.map((field) => (
                   <Flex mb={4} key={field.name}>
+                    <Text fontSize="sm" mr={2} width="30%">
+                      {field.title}
+                    </Text>
                     <Input
                       placeholder={field.placeholder}
                       variant="subtle"
@@ -137,7 +142,7 @@ export default function InputCreate({ fields, submit, editIndex, loadingSave, op
                 ))}
             </Dialog.Body>
             <Dialog.Footer>
-              <Box display="flex" justifyContent="flex-end" gap={2} mt={4}>
+              <Box display="flex" justifyContent="flex-end" gap={2} mt={4}> 
                 <Dialog.CloseTrigger asChild>
                   <Button variant="ghost">Cancelar</Button>
                 </Dialog.CloseTrigger>
@@ -145,9 +150,9 @@ export default function InputCreate({ fields, submit, editIndex, loadingSave, op
                   isLoading={loadingSave}
                   loadingText="Salvando"
                   onClick={() => {
-                    submit(formValues)
-                    console.log("Form Values antes do submit:", formValues);
-                }}
+                    console.log("Form Values antes do submit:", formValues); 
+                    submit(formValues);
+                  }}
                   colorScheme="teal"
                   background={editIndex !== null ? "blue" : "green"}
                   color="white"
@@ -156,9 +161,9 @@ export default function InputCreate({ fields, submit, editIndex, loadingSave, op
                 </Button>
               </Box>
             </Dialog.Footer>
-            <Dialog.CloseTrigger asChild>
+            {/* <Dialog.CloseTrigger asChild>
               <CloseButton size="sm" />
-            </Dialog.CloseTrigger>
+            </Dialog.CloseTrigger> */}
           </Dialog.Content>
         </Dialog.Positioner>
       </Portal>

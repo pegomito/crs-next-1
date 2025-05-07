@@ -29,7 +29,8 @@ import {
 } from "@chakra-ui/react";
 
 
-export default function TasksCargo() {
+
+export default function TasksFilme() {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -39,24 +40,12 @@ export default function TasksCargo() {
   const [openDialog, setOpenDialog] = useState({open: false});
   const [loadingSave, setLoadingSave] = useState(false);
   
-  const buscarCargo = async () => {
-      try {
-        const response = await api.get('/cargos')
-        setTasks(response.data.data);
-      } catch (error) {
-        
-      }
-    }
-  useEffect(() => {
-    buscarCargo();
-  }, [])
-
   // const filteredTasks = tasks.filter(task =>
   //   task.toLowerCase().includes(searchTerm.toLowerCase())
   // );
 
   const filteredTasks = tasks.filter(task =>
-    task.descricao.toLowerCase().includes(searchTerm.toLowerCase())
+    task.nome.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const indexUltimoItem = currentPage * itemsPerPage;
@@ -67,45 +56,50 @@ export default function TasksCargo() {
     setCurrentPage(1);
   }, [searchTerm]);
 
-      // if (editIndex !== null) {
-
-      //   const tasksAtualizado = tasks.map((task, i) =>
-      //     i === editIndex ? input : task
-      //   );
-      //   setTasks(tasksAtualizado);
-      //   setEditIndex(null);  
-      // } 
+  const buscarFilme = async () => {
+      try {
+        const response = await api.get('/filme')
+        setTasks(response.data.data);
+      } catch (error) {
         
-      //setTasks([...tasks, input]);
+      }Filme
+    }
+  useEffect(() => {
+    buscarFilme();
+  }, [])
 
   const criarTask = async (formValues) => {
     console.log("Form Values recebidos em criarTask:", formValues); 
   
-    if (!formValues.descricao || !formValues.descricao.trim()) {
-      alert("Nada foi digitado");
+    
+    if (!formValues.nome || !formValues.cpf || !formValues.email || !formValues.password) {
+      alert("Todos os campos obrigatórios devem ser preenchidos.");
       return;
     }
   
     try {
-      const response = await api.post('/cargos', {
+      const response = await api.post('/filme', {
+        nome: formValues.nome,
         descricao: formValues.descricao,
+        autor: formValues.autor,
+        duracao: formValues.duracao,
       });
   
       console.log("Resposta do backend:", response.data); 
   
       toaster.create({
-        title: "Cargo criado com sucesso",
-        description: `Cargo ${formValues.descricao} foi criado.`,
+        title: "Filme criado com sucesso",
+        description: `Filme ${formValues.nome} foi criado.`,
         type: "success",
       });
   
-      await buscarCargo(); 
+      await buscarFilme(); 
       setOpenDialog({ open: false }); 
     } catch (error) {
-      console.error("Erro ao criar cargo:", error);
+      console.error("Erro ao criar Filme:", error.response?.data || error.message); 
       toaster.create({
-        title: "Erro ao criar cargo",
-        description: `Erro = ${error.message}`,
+        title: "Erro ao criar Filme",
+        description: `Erro = ${error.response?.data?.message || error.message}`,
         type: "error",
       });
     }
@@ -119,30 +113,30 @@ export default function TasksCargo() {
   //   // setEditIndex(index); 
   // };
 
-  const editarCargo = async (task) => {
+  const editarFilme = async (task) => {
     if (!task.descricao.trim()) {
       alert("O campo de descrição está vazio.");
       return;
     }
   
     try {
-      const response = await api.patch(`/cargos/${task.id}`, {
-        descricao: task.descricao, 
+      const response = await api.patch(`/filme/${task.id}`, {
+        nome: task.nome, 
       });
   
       const tasksAtualizado = tasks.map((t) =>
-        t.id === task.id ? { ...t, descricao: task.descricao } : t
+        t.id === task.id ? { ...t, nome: task.nome } : t
       );
       setTasks(tasksAtualizado);
   
       toaster.create({
-        title: "Cargo foi atualizado com sucesso!",
-        description: `Cargo foi atualizado para ${task.descricao}`,
+        title: "Filme foi atualizado com sucesso!",
+        description: `Filme foi atualizado para ${task.nome}`,
         type: "success",
       });
     } catch (error) {
       toaster.create({
-        title: "Erro ao atualizar cargo",
+        title: "Erro ao atualizar Filme",
         description: `Erro = ${error.message}`,
         type: "error",
       });
@@ -155,27 +149,29 @@ export default function TasksCargo() {
     
   // };
 
-  const excluirCargo = async (id) => {
+  const excluirFilme = async (id) => {
     try {
-      await api.delete(`/cargos/${id}`);
+      await api.delete(`/filmes/${id}`);
 
       const tasksAtualizado = tasks.filter((task) => task.id !== id);
       setTasks(tasksAtualizado);
   
       toaster.create({
-        title: "cargo excluído com sucesso",
-        description: `cargo com ID ${id} foi removido.`,
+        title: "Filme excluído com sucesso",
+        description: `Filme com ID ${id} foi removido.`,
         type: "success",
       });
     } catch (error) {
       toaster.create({
-        title: "erro ao excluir cargo",
+        title: "erro ao excluir Filme",
         description: `Erro = ${error.message}`,
         type: "error",
       });
     }
   };
   
+  const nomeTask = "Filme"
+
   return (
     <Box 
     p={8}  
@@ -183,57 +179,54 @@ export default function TasksCargo() {
     boxShadow="lg"
     data-state="open"
     animationDuration="slow"
-  animationStyle={{ _open: "slide-fade-in", _closed: "slide-fade-out" }}
+    animationStyle={{ _open: "slide-fade-in", _closed: "slide-fade-out" }}
     >
       <Flex justifyContent="center">
-         <Heading mb={12} gapX={2} display='flex'> CRUD Cargos <MdMoreTime/></Heading>
-     </Flex>
+         <Heading mb={12} gapX={2} display='flex'> CRUD Filmes <MdMoreTime/></Heading>
+    </Flex>
     <Flex justifyContent="center">
       <Grid
       templateRows="repeat(2, 1fr)"
       templateColumns="repeat(2, 1fr)"
       gap={4}
       >
-        <GridItem rowSpan={3}>
+        <GridItem rowSpan={3}>  
           <InputPesquisa
             searchTerm={searchTerm}
             SetSeachTerm={setSearchTerm}
 
           />
         </GridItem>
-          <GridItem rowSpan={1}>
+        <GridItem rowSpan={1}>
             <InputCreate
               fields={[
-                { name: "descricao", placeholder: "Ex: Pipoqueiro Sênior", title: "Descrição:" },
+                { name: "nome", placeholder: "Ex: Oppenheimer", title: "Título:" },
+                { name: "descricao", placeholder: "Ex: O físico J. Robert Oppenheimer trabalha com uma equipe de cientistas dur...", title: "Sinopse:" },
+                { name: "autor", placeholder: "Ex: Diretor", title: "Diretor:" },
+                { name: "duracao", placeholder: "Ex: 180 (em minutos)" ,title: "Duração:"},
               ]}
               submit={(formValues) => criarTask(formValues)} 
-              editIndex={editIndex}
               loadingSave={loadingSave}
               open={openDialog}
               setOpen={setOpenDialog}
+              header
+              title={nomeTask}
             />
-          </GridItem>
+        </GridItem>
       </Grid>
       </Flex>
       <Stack style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {/* <TabelaCrudOriginal
-          items={tasksAtuais}
-          onEdit={editarTask}
-          onDelete={excluirTask}
-          acoes={true}
-           headers={[
-            'ID',
-            'Descrição'
-          ]}
-        /> */}
         <TabelaCrudAll
           items={tasksAtuais}
           headers={[
             { key: "id", label: "ID" },
-            { key: "descricao", label: "Descrição" },
+            { key: "nome", label: "Título" },
+            { key: "descricao", label: "Sinopse" },
+            { key: "autor", label: "Diretor" },
+            { key: "duracao", label: "Duração (min)" },
           ]}
-          onEdit={editarCargo}
-          onDelete={excluirCargo}
+          onEdit={editarFilme}
+          onDelete={excluirFilme}
           acoes={true}
         />
         <Pagination.Root

@@ -68,43 +68,44 @@ export default function TasksUsuario() {
     buscarUsuario();
   }, [])
 
-  const criarTask = async () => {
-    if (!input.trim()) {
-      alert("Nada foi digitado");
+  const criarTask = async (formValues) => {
+    console.log("Form Values recebidos em criarTask:", formValues); 
+  
+    
+    if (!formValues.nome || !formValues.cpf || !formValues.email || !formValues.password) {
+      alert("Todos os campos obrigatórios devem ser preenchidos.");
       return;
     }
-
+  
     try {
-      if (editIndex !== null) {
-
-        const tasksAtualizado = tasks.map((task, i) =>
-          i === editIndex ? input : task
-        );
-        setTasks(tasksAtualizado);
-        setEditIndex(null); 
-      } 
-        
-        //setTasks([...tasks, input]);
-        const response = await api.post('/usuarios', {
-          nome: input
-        });
-        toaster.create({
-          title: "Usuario criado com sucesso",
-          description: `Usuario ${input} foi criado `,
-          type: "success",
-        });
-        await buscarCargo();
-        setOpenDialog({open: false});
-    } catch (error) {
+      const response = await api.post('/usuarios', {
+        nome: formValues.nome,
+        cpf: formValues.cpf,
+        email: formValues.email,
+        idCargo: formValues.idCargo || null, 
+        password: formValues.password,
+        estudante: formValues.estudante === "true", 
+      });
+  
+      console.log("Resposta do backend:", response.data); 
+  
       toaster.create({
-        title: "Erro ao criar usuario",
-          description: `Erro = ${error}`,
-          type: "error",
+        title: "Usuário criado com sucesso",
+        description: `Usuário ${formValues.nome} foi criado.`,
+        type: "success",
+      });
+  
+      await buscarUsuario(); 
+      setOpenDialog({ open: false }); 
+    } catch (error) {
+      console.error("Erro ao criar usuário:", error.response?.data || error.message); 
+      toaster.create({
+        title: "Erro ao criar usuário",
+        description: `Erro = ${error.response?.data?.message || error.message}`,
+        type: "error",
       });
     }
-
-    setInput("");
-  };  
+  };
 
   // const editarTask = async ({
 
@@ -198,27 +199,18 @@ export default function TasksUsuario() {
         </GridItem>
         <GridItem rowSpan={1}>
             <InputCreate
-              
               fields={[
-                { name: "nome", placeholder: "Ex: JOkA MAl0ka" },
-                { name: "cpf", placeholder: "Ex: 123.456.789-00" },
-                { name: "email", placeholder: "Ex: polenteromaster@gmail.com" },
-                { name: "idCargo", placeholder: "Ex: 1" },
-                { name: "passwordHash", placeholder: "Digite uma senha" },
-                { name: "estudante", placeholder: "É estudante? (true/false)" }
+                { name: "nome", placeholder: "Ex: Joka Maloka", title: "Nome:" },
+                { name: "cpf", placeholder: "Ex: 123.456.789-00", title: "CPF:" },
+                { name: "email", placeholder: "Ex: sholinmatadordeporco@email.com", title: "Email:" },
+                { name: "idCargo", placeholder: "Ex: 1" ,title: "ID Cargo:"},
+                { name: "password", placeholder: "Digite uma senha", title: "Senha:" },
+                { name: "estudante", placeholder: "É estudante? (true/false)", title: "É estudante?" },
               ]}
               submit={(formValues) => criarTask(formValues)} 
-              editIndex={editIndex}
               loadingSave={loadingSave}
               open={openDialog}
               setOpen={setOpenDialog}
-            // input={input}
-            // setInput={setInput}
-            // submit={criarTask}
-            // editIndex={editIndex}
-            // loadingSave={loadingSave}
-            // setOpen={setOpenDialog}
-            // open={openDialog}
             />
         </GridItem>
       </Grid>

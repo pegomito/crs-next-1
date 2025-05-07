@@ -17,7 +17,7 @@ import { MdAdd, MdDelete, MdMode, MdCheck, MdChevronRight, MdChevronLeft } from 
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(''); 
   const [searchTerm, setSearchTerm] = useState(''); 
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
