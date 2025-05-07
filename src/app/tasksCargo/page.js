@@ -120,23 +120,25 @@ export default function TasksCargo() {
   // };
 
   const editarCargo = async (task) => {
-    if (!task.descricao.trim()) {
+    console.log("Dados recebidos para edição na API:", task); // Depuração
+  
+    if (!task.descricao || !task.descricao.trim()) {
       alert("O campo de descrição está vazio.");
       return;
     }
   
     try {
       const response = await api.patch(`/cargos/${task.id}`, {
-        descricao: task.descricao, 
+        descricao: task.descricao,
       });
   
-      const tasksAtualizado = tasks.map((t) =>
+      const cargosAtualizados = tasks.map((t) =>
         t.id === task.id ? { ...t, descricao: task.descricao } : t
       );
-      setTasks(tasksAtualizado);
+      setTasks(cargosAtualizados);
   
       toaster.create({
-        title: "Cargo foi atualizado com sucesso!",
+        title: "Cargo atualizado com sucesso!",
         description: `Cargo foi atualizado para ${task.descricao}`,
         type: "success",
       });
@@ -232,8 +234,8 @@ export default function TasksCargo() {
             { key: "id", label: "ID" },
             { key: "descricao", label: "Descrição" },
           ]}
-          onEdit={editarCargo}
-          onDelete={excluirCargo}
+          onEdit={editarCargo} // Passa a função de edição
+          onDelete={excluirCargo} // Função de exclusão, se aplicável
           acoes={true}
         />
         <Pagination.Root

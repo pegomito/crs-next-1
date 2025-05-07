@@ -1,33 +1,42 @@
 import { Dialog, Button, Input, Stack, Text } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
 
 export default function EditDialog({ isOpen, onClose, item, headers, onSave }) {
+  const [localItem, setLocalItem] = useState({});
+
+  useEffect(() => {
+    if (item) {
+      setLocalItem(item); // Inicializa o estado local com o item recebido
+    }
+  }, [item]);
+
   const handleSave = () => {
-    onSave(item);
-    onClose();
+    console.log("Dados enviados para salvar:", localItem); // Depuração
+    onSave(localItem); // Envia o item atualizado para o componente pai
+    onClose(); // Fecha o Dialog
   };
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Content>
         <Dialog.Header>
-          <Dialog.Title>Editar Registro</Dialog.Title>
+          <Dialog.Title>Editar Cargo</Dialog.Title>
         </Dialog.Header>
         <Dialog.Body>
-          {item &&
-            headers.map((header) => (
-              <Stack key={header.key} mb={4}>
-                <Text>{header.label}</Text>
-                <Input
-                  value={item[header.key] || ""}
-                  onChange={(e) =>
-                    onSave({
-                      ...item,
-                      [header.key]: e.target.value,
-                    })
-                  }
-                />
-              </Stack>
-            ))}
+          {headers.map((header) => (
+            <Stack key={header.key} mb={4}>
+              <Text>{header.label}</Text>
+              <Input
+                value={localItem[header.key] || ""}
+                onChange={(e) =>
+                  setLocalItem((prev) => ({
+                    ...prev,
+                    [header.key]: e.target.value,
+                  }))
+                }
+              />
+            </Stack>
+          ))}
         </Dialog.Body>
         <Dialog.Footer>
           <Button variant="ghost" onClick={onClose}>

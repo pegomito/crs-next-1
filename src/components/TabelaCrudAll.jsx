@@ -1,6 +1,5 @@
-import { Table, Button, Stack, Input, Dialog, Text } from "@chakra-ui/react";
+import { Table, Button, Stack, Tooltip } from "@chakra-ui/react";
 import { MdDelete, MdMode } from "react-icons/md";
-import { Tooltip } from "@/components/ui/tooltip";
 import { useState } from "react";
 import EditDialog from "@/components/EditDialog";
 
@@ -9,24 +8,26 @@ export default function TabelaCrudAll({ items, headers, onEdit, onDelete, acoes 
   const [currentEditItem, setCurrentEditItem] = useState(null);
 
   const editStart = (item) => {
-    console.log("Editando item:", item);
+    console.log("Editando item:", item); 
     setCurrentEditItem(item); 
     setIsEditDialogOpen(true); 
   };
 
-  const editSave = (item) => {
-    if (!item) {
-      alert("Nenhum item para salvar.");
-      return;
-    }
+  const editSave = (updatedItem) => {
+    console.log("Dados recebidos para edição:", updatedItem); // Depuração
+    onEdit(updatedItem); // Chama a função de edição no componente pai
+    setIsEditDialogOpen(false); // Fecha o Dialog
+  };
 
-    onEdit(item); 
-    setIsEditDialogOpen(false); 
+  const handleSave = (updatedItem) => {
+    console.log("Item atualizado enviado para edição:", updatedItem); // Depuração
+    onEdit(updatedItem);
+    setIsEditDialogOpen(false);
   };
 
   return (
     <>
-    <EditDialog placement="top"
+      <EditDialog
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
         item={currentEditItem}
@@ -46,18 +47,12 @@ export default function TabelaCrudAll({ items, headers, onEdit, onDelete, acoes 
           {items.map((item) => (
             <Table.Row key={item.id}>
               {headers.map((header, i) => (
-                <Table.Cell key={i}>
-                  {header.key === "estudante"
-                    ? item[header.key] === true
-                      ? "Sim"
-                      : "Não"
-                    : item[header.key]}
-                </Table.Cell>
+                <Table.Cell key={i}>{item[header.key]}</Table.Cell>
               ))}
               {acoes && (
                 <Table.Cell textAlign="center">
                   <Stack direction="row">
-                    <Tooltip content="Editar">
+                    {/* <Tooltip label="Editar"> */}
                       <Button
                         background="Blue"
                         color="white"
@@ -67,8 +62,8 @@ export default function TabelaCrudAll({ items, headers, onEdit, onDelete, acoes 
                       >
                         <MdMode />
                       </Button>
-                    </Tooltip>
-                    <Tooltip content="Excluir">
+                    {/* </Tooltip> */}
+                    {/* <Tooltip label="Excluir"> */}
                       <Button
                         background="red"
                         color="white"
@@ -78,7 +73,7 @@ export default function TabelaCrudAll({ items, headers, onEdit, onDelete, acoes 
                       >
                         <MdDelete />
                       </Button>
-                    </Tooltip>
+                    {/* </Tooltip> */}
                   </Stack>
                 </Table.Cell>
               )}

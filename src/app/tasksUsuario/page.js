@@ -116,14 +116,9 @@ export default function TasksUsuario() {
   // };
 
   const editarUsuario = async (task) => {
-    if (!task.descricao.trim()) {
-      alert("O campo de descrição está vazio.");
-      return;
-    }
-  
     try {
       const response = await api.patch(`/usuarios/${task.id}`, {
-        nome: task.nome, 
+        nome: task.nome,
       });
   
       const tasksAtualizado = tasks.map((t) =>
@@ -132,13 +127,13 @@ export default function TasksUsuario() {
       setTasks(tasksAtualizado);
   
       toaster.create({
-        title: "Usuario foi atualizado com sucesso!",
-        description: `Usuario foi atualizado para ${task.nome}`,
+        title: "Usuário atualizado com sucesso!",
+        description: `Usuário foi atualizado para ${task.nome}`,
         type: "success",
       });
     } catch (error) {
       toaster.create({
-        title: "Erro ao atualizar usuario",
+        title: "Erro ao atualizar usuário",
         description: `Erro = ${error.message}`,
         type: "error",
       });
