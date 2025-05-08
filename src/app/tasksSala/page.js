@@ -30,7 +30,7 @@ import {
 
 
 
-export default function TasksSala() {
+export default function TasksUsuario() {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -45,7 +45,7 @@ export default function TasksSala() {
   // );
 
   const filteredTasks = tasks.filter(task =>
-    task.nome.toLowerCase().includes(searchTerm.toLowerCase())
+    task.observacao.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const indexUltimoItem = currentPage * itemsPerPage;
@@ -56,7 +56,7 @@ export default function TasksSala() {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const buscarSala = async () => {
+  const buscarUsuario = async () => {
       try {
         const response = await api.get('/salas')
         setTasks(response.data.data);
@@ -65,46 +65,42 @@ export default function TasksSala() {
       }
     }
   useEffect(() => {
-    buscarSala();
+    buscarUsuario();
   }, [])
 
-  const criarTask = async () => {
-    if (!input.trim()) {
-      alert("Nada foi digitado");
+  const criarTask = async (formValues) => {
+    console.log("Form Values recebidos em criarTask:", formValues); // Depuração
+  
+    if (!formValues.observacao || !formValues.idPadraoLugares) {
+      alert("Todos os campos obrigatórios devem ser preenchidos.");
       return;
     }
-
+  
     try {
-      if (editIndex !== null) {
-
-        const tasksAtualizado = tasks.map((task, i) =>
-          i === editIndex ? input : task
-        );
-        setTasks(tasksAtualizado);
-        setEditIndex(null); 
-      } 
-        
-        //setTasks([...tasks, input]);
-        const response = await api.post('/salas', {
-          nome: input
-        });
-        toaster.create({
-          title: "Sala criado com sucesso",
-          description: `Sala ${input} foi criado `,
-          type: "success",
-        });
-        await buscarCargo();
-        setOpenDialog({open: false});
-    } catch (error) {
+      const response = await api.post('/salas', {
+        observacao: formValues.observacao,
+        idPadraoLugares: formValues.idPadraoLugares,
+      });
+  
+      console.log("Resposta do backend:", response.data); // Depuração
+  
       toaster.create({
-        title: "Erro ao criar Sala",
-          description: `Erro = ${error}`,
-          type: "error",
+        title: "Sala criada com sucesso",
+        description: `Sala com observação "${formValues.observacao}" foi criada.`,
+        type: "success",
+      });
+  
+      await buscarUsuario(); // Atualiza a lista de salas
+      setOpenDialog({ open: false });
+    } catch (error) {
+      console.error("Erro ao criar sala:", error.response?.data || error.message);
+      toaster.create({
+        title: "Erro ao criar sala",
+        description: `Erro = ${error.response?.data?.message || error.message}`,
+        type: "error",
       });
     }
-
-    setInput("");
-  };  
+  };
 
   // const editarTask = async ({
 
@@ -114,31 +110,38 @@ export default function TasksSala() {
   //   // setEditIndex(index); 
   // };
 
-  const editarSala = async (task) => {
-    if (!task.observacao.trim()) {
-      alert("O campo de observacao está vazio.");
+  const editarUsuario = async (task) => {
+    console.log("Dados recebidos para edição:", task); // Depuração
+  
+    if (!task.observacao || !task.idPadraoLugares) {
+      alert("Todos os campos obrigatórios devem ser preenchidos.");
       return;
     }
   
     try {
       const response = await api.patch(`/salas/${task.id}`, {
-        nome: task.nome, 
+        observacao: task.observacao,
+        idPadraoLugares: task.idPadraoLugares,
       });
   
-      const tasksAtualizado = tasks.map((t) =>
-        t.id === task.id ? { ...t, nome: task.nome } : t
+      console.log("Resposta do backend ao editar sala:", response.data); // Depuração
+  
+      // Atualiza o estado com os dados editados
+      const salasAtualizadas = tasks.map((t) =>
+        t.id === task.id ? { ...t, ...response.data } : t
       );
-      setTasks(tasksAtualizado);
+      setTasks(salasAtualizadas);
   
       toaster.create({
-        title: "Sala foi atualizado com sucesso!",
-        description: `Sala foi atualizado para ${task.nome}`,
+        title: "Sala atualizada com sucesso!",
+        description: `Sala com observação "${task.observacao}" foi atualizada.`,
         type: "success",
       });
     } catch (error) {
+      console.error("Erro ao editar sala:", error.response?.data || error.message);
       toaster.create({
-        title: "Erro ao atualizar Sala",
-        description: `Erro = ${error.message}`,
+        title: "Erro ao editar sala",
+        description: `Erro = ${error.response?.data?.message || error.message}`,
         type: "error",
       });
     }
@@ -150,7 +153,7 @@ export default function TasksSala() {
     
   // };
 
-  const excluirSala = async (id) => {
+  const excluirUsuario = async (id) => {
     try {
       await api.delete(`/salas/${id}`);
 
@@ -158,13 +161,13 @@ export default function TasksSala() {
       setTasks(tasksAtualizado);
   
       toaster.create({
-        title: "Sala excluído com sucesso",
-        description: `Sala com ID ${id} foi removido.`,
+        title: "Usuario excluído com sucesso",
+        description: `Usuario com ID ${id} foi removido.`,
         type: "success",
       });
     } catch (error) {
       toaster.create({
-        title: "erro ao excluir Sala",
+        title: "erro ao excluir usuario",
         description: `Erro = ${error.message}`,
         type: "error",
       });
@@ -181,8 +184,8 @@ export default function TasksSala() {
     animationStyle={{ _open: "slide-fade-in", _closed: "slide-fade-out" }}
     >
       <Flex justifyContent="center">
-         <Heading mb={12} gapX={2} display='flex'> CRUD Usuários <MdMoreTime/></Heading>
-     </Flex>
+         <Heading mb={12} gapX={2} display='flex'> CRUD Salas <MdMoreTime/></Heading>
+    </Flex>
     <Flex justifyContent="center">
       <Grid
       templateRows="repeat(2, 1fr)"
@@ -197,15 +200,17 @@ export default function TasksSala() {
           />
         </GridItem>
         <GridItem rowSpan={1}>
-          <InputCreate
-            input={input}
-            setInput={setInput}
-            submit={criarTask}
-            editIndex={editIndex}
-            loadingSave={loadingSave}
-            setOpen={setOpenDialog}
-            open={openDialog}
-          />
+            <InputCreate
+              fields={[
+                { name: "observacao", placeholder: "Ex: sala grande" ,title: "Observaco" },
+                { name: "idPadraoLugares", placeholder: "Ex: 1", title: "Id Padrão Lugar" },
+                
+              ]}
+              submit={(formValues) => criarTask(formValues)} 
+              loadingSave={loadingSave}
+              open={openDialog}
+              setOpen={setOpenDialog}
+            />
         </GridItem>
       </Grid>
       </Flex>
@@ -214,13 +219,11 @@ export default function TasksSala() {
           items={tasksAtuais}
           headers={[
             { key: "id", label: "ID" },
-            { key: "nome", label: "Nome" },
-            { key: "cpf", label: "CPF" },
-            { key: "email", label: "Email" },
-            { key: "idCargo", label: "ID Cargo"}
+            { key: "observacao", label: "observacao" },
+            { key: "idPadraoLugares", label: "idPadraoLugares" },
           ]}
-          onEdit={editarSala}
-          onDelete={excluirSala}
+          onEdit={editarUsuario}
+          onDelete={excluirUsuario}
           acoes={true}
         />
         <Pagination.Root

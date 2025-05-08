@@ -57,22 +57,23 @@ export default function TasksFilme() {
   }, [searchTerm]);
 
   const buscarFilme = async () => {
-      try {
-        const response = await api.get('/filme')
-        setTasks(response.data.data);
-      } catch (error) {
-        
-      }Filme
+    try {
+      const response = await api.get('/filme');
+      console.log("Filmes recebidos do backend:", response.data); // Depuração
+      setTasks(response.data.data);
+    } catch (error) {
+      console.error("Erro ao buscar filmes:", error.message);
     }
+  };
+
   useEffect(() => {
     buscarFilme();
   }, [])
 
   const criarTask = async (formValues) => {
-    console.log("Form Values recebidos em criarTask:", formValues); 
+    console.log("Valores recebidos no formulário:", formValues); // Depuração
   
-    
-    if (!formValues.nome || !formValues.cpf || !formValues.email || !formValues.password) {
+    if (!formValues.nome || !formValues.descricao || !formValues.autor || !formValues.duracao || !formValues.imagemCartaz) {
       alert("Todos os campos obrigatórios devem ser preenchidos.");
       return;
     }
@@ -83,9 +84,10 @@ export default function TasksFilme() {
         descricao: formValues.descricao,
         autor: formValues.autor,
         duracao: formValues.duracao,
+        imagemCartaz: formValues.imagemCartaz,
       });
   
-      console.log("Resposta do backend:", response.data); 
+      console.log("Resposta do backend:", response.data); // Depuração
   
       toaster.create({
         title: "Filme criado com sucesso",
@@ -93,10 +95,10 @@ export default function TasksFilme() {
         type: "success",
       });
   
-      await buscarFilme(); 
-      setOpenDialog({ open: false }); 
+      await buscarFilme(); // Atualiza a lista de filmes
+      setOpenDialog({ open: false }); // Fecha o diálogo
     } catch (error) {
-      console.error("Erro ao criar Filme:", error.response?.data || error.message); 
+      console.error("Erro ao criar Filme:", error.response?.data || error.message);
       toaster.create({
         title: "Erro ao criar Filme",
         description: `Erro = ${error.response?.data?.message || error.message}`,
@@ -151,26 +153,23 @@ export default function TasksFilme() {
 
   const excluirFilme = async (id) => {
     try {
-      await api.delete(`/filmes/${id}`);
-
-      const tasksAtualizado = tasks.filter((task) => task.id !== id);
-      setTasks(tasksAtualizado);
-  
+      console.log("ID enviado para exclusão:", id);
+      await api.delete(`/filme/${id}`);
+      setTasks(tasks.filter((task) => task.id !== id));
       toaster.create({
         title: "Filme excluído com sucesso",
         description: `Filme com ID ${id} foi removido.`,
         type: "success",
       });
     } catch (error) {
+      console.error("Erro ao excluir filme:", error.message);
       toaster.create({
-        title: "erro ao excluir Filme",
+        title: "Erro ao excluir filme",
         description: `Erro = ${error.message}`,
         type: "error",
       });
     }
   };
-  
-  const nomeTask = "Filme"
 
   return (
     <Box 
@@ -204,13 +203,13 @@ export default function TasksFilme() {
                 { name: "descricao", placeholder: "Ex: O físico J. Robert Oppenheimer trabalha com uma equipe de cientistas dur...", title: "Sinopse:" },
                 { name: "autor", placeholder: "Ex: Diretor", title: "Diretor:" },
                 { name: "duracao", placeholder: "Ex: 180 (em minutos)" ,title: "Duração:"},
+                { name: "imagemCartaz", placeholder: "Ex: URL da imagem", title: "Imagem:" },
               ]}
               submit={(formValues) => criarTask(formValues)} 
               loadingSave={loadingSave}
               open={openDialog}
               setOpen={setOpenDialog}
               header
-              title={nomeTask}
             />
         </GridItem>
       </Grid>
@@ -224,6 +223,13 @@ export default function TasksFilme() {
             { key: "descricao", label: "Sinopse" },
             { key: "autor", label: "Diretor" },
             { key: "duracao", label: "Duração (min)" },
+            {
+              key: "imagemCartaz",
+              label: "Imagem",
+              render: (item) => (
+                <img src={item.imagemCartaz} alt={item.nome} style={{ width: "100px", height: "auto" }} />
+              ),
+            },
           ]}
           onEdit={editarFilme}
           onDelete={excluirFilme}

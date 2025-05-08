@@ -19,11 +19,8 @@ export default function TabelaCrudAll({ items, headers, onEdit, onDelete, acoes 
     setIsEditDialogOpen(false); // Fecha o Dialog
   };
 
-  const handleSave = (updatedItem) => {
-    console.log("Item atualizado enviado para edição:", updatedItem); // Depuração
-    onEdit(updatedItem);
-    setIsEditDialogOpen(false);
-  };
+  console.log("Itens recebidos pela tabela:", items); 
+  console.log("Cabeçalhos recebidos pela tabela:", headers); 
 
   return (
     <>
@@ -47,33 +44,40 @@ export default function TabelaCrudAll({ items, headers, onEdit, onDelete, acoes 
           {items.map((item) => (
             <Table.Row key={item.id}>
               {headers.map((header, i) => (
-                <Table.Cell key={i}>{item[header.key]}</Table.Cell>
+                <Table.Cell key={i}>
+                  {typeof item[header.key] === "object" && item[header.key] !== null
+                    ? Array.isArray(item[header.key])
+                      ? item[header.key]
+                          .map(
+                            (lugar, index) =>
+                              `Lugar ${lugar.lugar}, Linha ${lugar.linha}, Coluna ${lugar.coluna}, Alocado: ${lugar.alocado}`
+                          )
+                          .join("; ") // bagui de JSONB
+                      : JSON.stringify(item[header.key]) 
+                    : item[header.key]}
+                </Table.Cell>
               ))}
               {acoes && (
                 <Table.Cell textAlign="center">
                   <Stack direction="row">
-                    {/* <Tooltip label="Editar"> */}
-                      <Button
-                        background="Blue"
-                        color="white"
-                        variant="subtle"
-                        size="xs"
-                        onClick={() => editStart(item)}
-                      >
-                        <MdMode />
-                      </Button>
-                    {/* </Tooltip> */}
-                    {/* <Tooltip label="Excluir"> */}
-                      <Button
-                        background="red"
-                        color="white"
-                        variant="subtle"
-                        size="xs"
-                        onClick={() => onDelete(item.id)}
-                      >
-                        <MdDelete />
-                      </Button>
-                    {/* </Tooltip> */}
+                    <Button
+                      background="Blue"
+                      color="white"
+                      variant="subtle"
+                      size="xs"
+                      onClick={() => editStart(item)}
+                    >
+                      <MdMode />
+                    </Button>
+                    <Button
+                      background="red"
+                      color="white"
+                      variant="subtle"
+                      size="xs"
+                      onClick={() => onDelete(item.id)}
+                    >
+                      <MdDelete />
+                    </Button>
                   </Stack>
                 </Table.Cell>
               )}
@@ -81,6 +85,26 @@ export default function TabelaCrudAll({ items, headers, onEdit, onDelete, acoes 
           ))}
         </Table.Body>
       </Table.Root>
+      <TabelaCrudAll
+        items={tasksAtuais}
+        headers={[
+          { key: "id", label: "ID" },
+          { key: "nome", label: "Título" },
+          { key: "descricao", label: "Sinopse" },
+          { key: "autor", label: "Diretor" },
+          { key: "duracao", label: "Duração (min)" },
+          {
+            key: "imagemCartaz",
+            label: "Imagem",
+            render: (item) => (
+              <img src={item.imagemCartaz} alt={item.nome} style={{ width: "100px", height: "auto" }} />
+            ),
+          },
+        ]}
+        onEdit={editarFilme}
+        onDelete={excluirFilme}
+        acoes={true}
+      />
     </>
   );
 }

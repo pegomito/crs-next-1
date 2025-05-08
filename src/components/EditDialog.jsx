@@ -6,6 +6,7 @@ export default function EditDialog({ isOpen, onClose, item, headers, onSave }) {
 
   useEffect(() => {
     if (item) {
+      console.log("Item recebido no EditDialog:", item);
       setLocalItem(item); // Inicializa o estado local com o item recebido
     }
   }, [item]);
@@ -20,21 +21,30 @@ export default function EditDialog({ isOpen, onClose, item, headers, onSave }) {
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Content>
         <Dialog.Header>
-          <Dialog.Title>Editar Cargo</Dialog.Title>
+          <Dialog.Title>Editar Usuário</Dialog.Title>
         </Dialog.Header>
         <Dialog.Body>
           {headers.map((header) => (
             <Stack key={header.key} mb={4}>
               <Text>{header.label}</Text>
-              <Input
-                value={localItem[header.key] || ""}
-                onChange={(e) =>
-                  setLocalItem((prev) => ({
-                    ...prev,
-                    [header.key]: e.target.value,
-                  }))
-                }
-              />
+              {header.key === "id" ? (
+                <Text>{localItem[header.key]}</Text> // Exibe o ID como texto somente leitura
+              ) : header.key === "estudante" ? (
+                <Input
+                  value={localItem[header.key] ? "Sim" : "Não"} // Exibe "Sim" ou "Não"
+                  isReadOnly // Torna o campo somente leitura
+                />
+              ) : (
+                <Input
+                  value={localItem[header.key] || ""}
+                  onChange={(e) =>
+                    setLocalItem((prev) => ({
+                      ...prev,
+                      [header.key]: e.target.value,
+                    }))
+                  }
+                />
+              )}
             </Stack>
           ))}
         </Dialog.Body>

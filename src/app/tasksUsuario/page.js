@@ -84,7 +84,7 @@ export default function TasksUsuario() {
         email: formValues.email,
         idCargo: formValues.idCargo || null, 
         password: formValues.password,
-        estudante: formValues.estudante === "true", 
+        estudante: formValues.estudante, 
       });
   
       console.log("Resposta do backend:", response.data); 
@@ -116,15 +116,26 @@ export default function TasksUsuario() {
   // };
 
   const editarUsuario = async (task) => {
+    console.log("Dados recebidos para edição na API:", task); // Depuração
+  
+    if (!task.nome || !task.nome.trim()) {
+      alert("O campo de nome está vazio.");
+      return;
+    }
+  
     try {
       const response = await api.patch(`/usuarios/${task.id}`, {
         nome: task.nome,
+        cpf: task.cpf,
+        email: task.email,
+        idCargo: task.idCargo,
+        estudante: task.estudante,
       });
   
-      const tasksAtualizado = tasks.map((t) =>
-        t.id === task.id ? { ...t, nome: task.nome } : t
+      const usuariosAtualizados = tasks.map((t) =>
+        t.id === task.id ? { ...t, ...task } : t
       );
-      setTasks(tasksAtualizado);
+      setTasks(usuariosAtualizados);
   
       toaster.create({
         title: "Usuário atualizado com sucesso!",
@@ -218,7 +229,7 @@ export default function TasksUsuario() {
             { key: "nome", label: "Nome" },
             { key: "cpf", label: "CPF" },
             { key: "email", label: "Email" },
-            { key: "idCargo", label: "ID Cargo"},
+            { key: "idCargo", label: "ID Cargo" },
             { key: "estudante", label: "É estudante?" },
           ]}
           onEdit={editarUsuario}

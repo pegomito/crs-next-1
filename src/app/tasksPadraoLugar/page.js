@@ -29,7 +29,8 @@ import {
 } from "@chakra-ui/react";
 
 
-export default function TasksCargo() {
+
+export default function TasksUsuario() {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -39,24 +40,12 @@ export default function TasksCargo() {
   const [openDialog, setOpenDialog] = useState({open: false});
   const [loadingSave, setLoadingSave] = useState(false);
   
-  const buscarCargo = async () => {
-      try {
-        const response = await api.get('/cargos')
-        setTasks(response.data.data);
-      } catch (error) {
-        
-      }
-    }
-  useEffect(() => {
-    buscarCargo();
-  }, [])
-
   // const filteredTasks = tasks.filter(task =>
   //   task.toLowerCase().includes(searchTerm.toLowerCase())
   // );
 
-  const filteredTasks = tasks.filter(task =>
-    task.descricao.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTasks = tasks.filter((task) =>
+    task.id.toString().toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const indexUltimoItem = currentPage * itemsPerPage;
@@ -67,45 +56,56 @@ export default function TasksCargo() {
     setCurrentPage(1);
   }, [searchTerm]);
 
-      // if (editIndex !== null) {
-
-      //   const tasksAtualizado = tasks.map((task, i) =>
-      //     i === editIndex ? input : task
-      //   );
-      //   setTasks(tasksAtualizado);
-      //   setEditIndex(null);  
-      // } 
+  const buscarUsuario = async () => {
+      try {
+        const response = await api.get('/padrao-lugares')
+        setTasks(response.data.data);
+      } catch (error) {
         
-      //setTasks([...tasks, input]);
+      }
+    }
+  useEffect(() => {
+    buscarUsuario();
+  }, [])
 
   const criarTask = async (formValues) => {
-    console.log("Form Values recebidos em criarTask:", formValues); 
+    console.log("Form Values recebidos em criarTask:", formValues); // Depuração
   
-    if (!formValues.descricao || !formValues.descricao.trim()) {
-      alert("Nada foi digitado");
+    if (!formValues.lugares) {
+      alert("O campo 'lugares' é obrigatório.");
+      return;
+    }
+  
+    let lugares;
+    try {
+      // Converte a string JSON para um objeto
+      lugares = JSON.parse(formValues.lugares);
+    } catch (error) {
+      alert("O campo 'lugares' deve conter um JSON válido.");
+      console.error("Erro ao converter JSON:", error);
       return;
     }
   
     try {
-      const response = await api.post('/cargos', {
-        descricao: formValues.descricao,
+      const response = await api.post("/padrao-lugares", {
+        lugares, // Envia o JSON convertido
       });
   
-      console.log("Resposta do backend:", response.data); 
+      console.log("Resposta do backend:", response.data); // Depuração
   
       toaster.create({
-        title: "Cargo criado com sucesso",
-        description: `Cargo ${formValues.descricao} foi criado.`,
+        title: "Padrão de Lugar criado com sucesso",
+        description: `Padrão de Lugar foi criado.`,
         type: "success",
       });
   
-      await buscarCargo(); 
-      setOpenDialog({ open: false }); 
+      await buscarUsuario(); // Atualiza a lista
+      setOpenDialog({ open: false });
     } catch (error) {
-      console.error("Erro ao criar cargo:", error);
+      console.error("Erro ao criar padrão de lugar:", error.response?.data || error.message);
       toaster.create({
-        title: "Erro ao criar cargo",
-        description: `Erro = ${error.message}`,
+        title: "Erro ao criar padrão de lugar",
+        description: `Erro = ${error.response?.data?.message || error.message}`,
         type: "error",
       });
     }
@@ -119,33 +119,38 @@ export default function TasksCargo() {
   //   // setEditIndex(index); 
   // };
 
-  const editarCargo = async (task) => {
-    console.log("Dados recebidos para edição na API:", task); 
+  const editarUsuario = async (task) => {
+    console.log("Dados recebidos para edição:", task); // Depuração
   
-    if (!task.descricao || !task.descricao.trim()) {
-      alert("O campo de descrição está vazio.");
+    if (!task.observacao || !task.idPadraoLugares) {
+      alert("Todos os campos obrigatórios devem ser preenchidos.");
       return;
     }
   
     try {
-      const response = await api.patch(`/cargos/${task.id}`, {
-        descricao: task.descricao,
+      const response = await api.patch(`/padrao-lugares/${task.id}`, {
+        observacao: task.observacao,
+        idPadraoLugares: task.idPadraoLugares,
       });
   
-      const cargosAtualizados = tasks.map((t) =>
-        t.id === task.id ? { ...t, descricao: task.descricao } : t
+      console.log("Resposta do backend ao editar sala:", response.data); // Depuração
+  
+      // Atualiza o estado com os dados editados
+      const padrao_lugaresAtualizadas = tasks.map((t) =>
+        t.id === task.id ? { ...t, ...response.data } : t
       );
-      setTasks(cargosAtualizados);
+      setTasks(padrao-lugaresAtualizadas);
   
       toaster.create({
-        title: "Cargo atualizado com sucesso!",
-        description: `Cargo foi atualizado para ${task.descricao}`,
+        title: "Sala atualizada com sucesso!",
+        description: `Sala com observação "${task.observacao}" foi atualizada.`,
         type: "success",
       });
     } catch (error) {
+      console.error("Erro ao editar sala:", error.response?.data || error.message);
       toaster.create({
-        title: "Erro ao atualizar cargo",
-        description: `Erro = ${error.message}`,
+        title: "Erro ao editar sala",
+        description: `Erro = ${error.response?.data?.message || error.message}`,
         type: "error",
       });
     }
@@ -157,21 +162,21 @@ export default function TasksCargo() {
     
   // };
 
-  const excluirCargo = async (id) => {
+  const excluirUsuario = async (id) => {
     try {
-      await api.delete(`/cargos/${id}`);
+      await api.delete(`/padrao-lugares/${id}`);
 
       const tasksAtualizado = tasks.filter((task) => task.id !== id);
       setTasks(tasksAtualizado);
   
       toaster.create({
-        title: "cargo excluído com sucesso",
-        description: `cargo com ID ${id} foi removido.`,
+        title: "Usuario excluído com sucesso",
+        description: `Usuario com ID ${id} foi removido.`,
         type: "success",
       });
     } catch (error) {
       toaster.create({
-        title: "erro ao excluir cargo",
+        title: "erro ao excluir usuario",
         description: `Erro = ${error.message}`,
         type: "error",
       });
@@ -185,57 +190,61 @@ export default function TasksCargo() {
     boxShadow="lg"
     data-state="open"
     animationDuration="slow"
-  animationStyle={{ _open: "slide-fade-in", _closed: "slide-fade-out" }}
+    animationStyle={{ _open: "slide-fade-in", _closed: "slide-fade-out" }}
     >
       <Flex justifyContent="center">
-         <Heading mb={12} gapX={2} display='flex'> CRUD Cargos <MdMoreTime/></Heading>
-     </Flex>
+         <Heading mb={12} gapX={2} display='flex'> CRUD Padrão de Lugares <MdMoreTime/></Heading>
+    </Flex>
     <Flex justifyContent="center">
       <Grid
       templateRows="repeat(2, 1fr)"
       templateColumns="repeat(2, 1fr)"
       gap={4}
       >
-        <GridItem rowSpan={3}>
+        <GridItem rowSpan={3}>  
           <InputPesquisa
             searchTerm={searchTerm}
             SetSeachTerm={setSearchTerm}
 
           />
         </GridItem>
-          <GridItem rowSpan={1}>
+        <GridItem rowSpan={1}>
             <InputCreate
               fields={[
-                { name: "descricao", placeholder: "Ex: Pipoqueiro Sênior", title: "Descrição:" },
+                {
+                  name: "lugares",
+                  placeholder: `Ex: [{"lugar": 1, "linha": 1, "coluna": 1, "alocado": false}]`,
+                  title: "Lugares JSONB",
+                  type: "textarea", // Use um textarea para facilitar a entrada de JSON
+                },
               ]}
-              submit={(formValues) => criarTask(formValues)} 
-              editIndex={editIndex}
+              submit={(formValues) => criarTask(formValues)}  
               loadingSave={loadingSave}
               open={openDialog}
               setOpen={setOpenDialog}
             />
-          </GridItem>
+        </GridItem>
       </Grid>
       </Flex>
       <Stack style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {/* <TabelaCrudOriginal
-          items={tasksAtuais}
-          onEdit={editarTask}
-          onDelete={excluirTask}
-          acoes={true}
-           headers={[
-            'ID',
-            'Descrição'
-          ]}
-        /> */}
         <TabelaCrudAll
           items={tasksAtuais}
           headers={[
             { key: "id", label: "ID" },
-            { key: "descricao", label: "Descrição" },
+            {
+              key: "lugares",
+              label: "Lugares (JSON)",
+              render: (item) =>
+                Array.isArray(item.lugares)
+                  ? item.lugares.map(
+                      (lugar, index) =>
+                        `Lugar ${lugar.lugar}, Linha ${lugar.linha}, Coluna ${lugar.coluna}, Alocado: ${lugar.alocado}`
+                    ).join("; ") // Concatena os valores em uma string
+                  : JSON.stringify(item.lugares), // Caso não seja um array, converte para string
+            },
           ]}
-          onEdit={editarCargo} 
-          onDelete={excluirCargo} 
+          onEdit={editarUsuario}
+          onDelete={excluirUsuario}
           acoes={true}
         />
         <Pagination.Root
