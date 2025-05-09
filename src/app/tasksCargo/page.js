@@ -229,17 +229,17 @@ export default function TasksCargo() {
           ]}
         /> */}
         <TabelaCrudAll
-          items={tasksAtuais}
+          items={tasksAtuais} 
           headers={[
             { key: "id", label: "ID" },
             { key: "descricao", label: "Descrição" },
           ]}
-          onEdit={editarCargo} 
-          onDelete={excluirCargo} 
+          onEdit={editarCargo}
+          onDelete={excluirCargo}
           acoes={true}
         />
         <Pagination.Root
-          count={filteredTasks.length}
+          count={filteredTasks.length}s
           pageSize={itemsPerPage}
           defaultPage={1}
           page={currentPage}

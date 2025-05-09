@@ -131,13 +131,17 @@ export default function InputCreate({ fields, submit, editIndex, loadingSave, op
                     <Text fontSize="sm" mr={2} width="30%">
                       {field.title}
                     </Text>
-                    <Input
-                      placeholder={field.placeholder}
-                      variant="subtle"
-                      mr={2}
-                      value={formValues[field.name] || ""}
-                      onChange={(e) => dinamicInput(field.name, e.target.value)}
-                    />
+                    {field.render ? (
+                      field.render() 
+                    ) : (
+                      <Input
+                        placeholder={field.placeholder}
+                        variant="subtle"
+                        mr={2}
+                        value={formValues[field.name] || ""}
+                        onChange={(e) => dinamicInput(field.name, e.target.value)}
+                      />
+                    )}
                   </Flex>
                 ))}
             </Dialog.Body>

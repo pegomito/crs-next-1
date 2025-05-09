@@ -14,9 +14,9 @@ export default function TabelaCrudAll({ items, headers, onEdit, onDelete, acoes 
   };
 
   const editSave = (updatedItem) => {
-    console.log("Dados recebidos para edição:", updatedItem); // Depuração
-    onEdit(updatedItem); // Chama a função de edição no componente pai
-    setIsEditDialogOpen(false); // Fecha o Dialog
+    console.log("Dados recebidos para edição:", updatedItem); 
+    onEdit(updatedItem);
+    setIsEditDialogOpen(false); 
   };
 
   console.log("Itens recebidos pela tabela:", items); 
@@ -85,26 +85,6 @@ export default function TabelaCrudAll({ items, headers, onEdit, onDelete, acoes 
           ))}
         </Table.Body>
       </Table.Root>
-      <TabelaCrudAll
-        items={tasksAtuais}
-        headers={[
-          { key: "id", label: "ID" },
-          { key: "nome", label: "Título" },
-          { key: "descricao", label: "Sinopse" },
-          { key: "autor", label: "Diretor" },
-          { key: "duracao", label: "Duração (min)" },
-          {
-            key: "imagemCartaz",
-            label: "Imagem",
-            render: (item) => (
-              <img src={item.imagemCartaz} alt={item.nome} style={{ width: "100px", height: "auto" }} />
-            ),
-          },
-        ]}
-        onEdit={editarFilme}
-        onDelete={excluirFilme}
-        acoes={true}
-      />
     </>
   );
 }

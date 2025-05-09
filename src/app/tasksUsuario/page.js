@@ -47,23 +47,26 @@ export default function TasksUsuario() {
   const filteredTasks = tasks.filter(task =>
     task.nome.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  console.log("Tarefas filtradas:", filteredTasks);
 
   const indexUltimoItem = currentPage * itemsPerPage;
   const indexPrimeiroItem = indexUltimoItem - itemsPerPage;   
   const tasksAtuais = filteredTasks.slice(indexPrimeiroItem, indexUltimoItem);
+  console.log("Tarefas atuais (paginadas):", tasksAtuais);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
 
   const buscarUsuario = async () => {
-      try {
-        const response = await api.get('/usuarios')
-        setTasks(response.data.data);
-      } catch (error) {
-        
-      }
+    try {
+      const response = await api.get('/usuarios');
+      console.log("Dados recebidos do backend:", response.data); // Verifica os dados recebidos
+      setTasks(response.data.data || []); // Atualiza o estado com os dados ou um array vazio
+    } catch (error) {
+      console.error("Erro ao buscar usuários:", error.message);
     }
+  };
   useEffect(() => {
     buscarUsuario();
   }, [])
@@ -84,7 +87,7 @@ export default function TasksUsuario() {
         email: formValues.email,
         idCargo: formValues.idCargo || null, 
         password: formValues.password,
-        estudante: formValues.estudante, 
+        estudante: formValues.estudante || false, 
       });
   
       console.log("Resposta do backend:", response.data); 
@@ -230,12 +233,21 @@ export default function TasksUsuario() {
             { key: "cpf", label: "CPF" },
             { key: "email", label: "Email" },
             { key: "idCargo", label: "ID Cargo" },
-            { key: "estudante", label: "É estudante?" },
+            {
+              key: "estudante",
+              label: "É estudante?",
+              render: (item) => {
+                if (item.estudante === true) return "Sim";
+                if (item.estudante === false) return "Não";
+                return "Não informado"; 
+              },
+            },
           ]}
           onEdit={editarUsuario}
           onDelete={excluirUsuario}
           acoes={true}
         />
+        {console.log("Itens passados para a tabela:", tasksAtuais)}
         <Pagination.Root
           count={filteredTasks.length}
           pageSize={itemsPerPage}

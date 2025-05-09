@@ -8,6 +8,8 @@ import { MdChevronRight, MdChevronLeft } from "react-icons/md";
 import React, { useState, useEffect } from "react";
 import InputPesquisa from "@/components/InputPesquisa";
 import { MdMoreTime } from "react-icons/md";
+import FileUpload from "@/components/FileUpload";
+
 import {
   Box,
   Button,
@@ -23,12 +25,8 @@ import {
   InputGroup, 
   GridItem,
   Grid,
-  createSystem,
-  defineConfig, 
-  defineLayerStyles  
+  useFileUploadContext, 
 } from "@chakra-ui/react";
-
-
 
 export default function TasksFilme() {
   const [tasks, setTasks] = useState([]);
@@ -39,7 +37,7 @@ export default function TasksFilme() {
   const [searchTerm, setSearchTerm] = useState('');	
   const [openDialog, setOpenDialog] = useState({open: false});
   const [loadingSave, setLoadingSave] = useState(false);
-  
+  const [uploadedFile, setUploadedFile] = useState(null);
   // const filteredTasks = tasks.filter(task =>
   //   task.toLowerCase().includes(searchTerm.toLowerCase())
   // );
@@ -59,7 +57,7 @@ export default function TasksFilme() {
   const buscarFilme = async () => {
     try {
       const response = await api.get('/filme');
-      console.log("Filmes recebidos do backend:", response.data); // Depuração
+      console.log("Filmes recebidos do backend:", response.data); 
       setTasks(response.data.data);
     } catch (error) {
       console.error("Erro ao buscar filmes:", error.message);
@@ -71,32 +69,38 @@ export default function TasksFilme() {
   }, [])
 
   const criarTask = async (formValues) => {
-    console.log("Valores recebidos no formulário:", formValues); // Depuração
-  
-    if (!formValues.nome || !formValues.descricao || !formValues.autor || !formValues.duracao || !formValues.imagemCartaz) {
+    console.log("Valores recebidos no formulário:", formValues);
+    console.log("Arquivo selecionado:", uploadedFile);
+
+    if (!formValues.nome || !formValues.descricao || !formValues.autor || !formValues.duracao || !uploadedFile) {
       alert("Todos os campos obrigatórios devem ser preenchidos.");
       return;
     }
-  
+
     try {
-      const response = await api.post('/filme', {
-        nome: formValues.nome,
-        descricao: formValues.descricao,
-        autor: formValues.autor,
-        duracao: formValues.duracao,
-        imagemCartaz: formValues.imagemCartaz,
+      const formData = new FormData();
+      formData.append("nome", formValues.nome);
+      formData.append("descricao", formValues.descricao);
+      formData.append("autor", formValues.autor);
+      formData.append("duracao", formValues.duracao);
+      formData.append("imagemCartaz", uploadedFile);
+
+      const response = await api.post('/filme', formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
-  
-      console.log("Resposta do backend:", response.data); // Depuração
-  
+
+      console.log("Resposta do backend:", response.data);
+
       toaster.create({
         title: "Filme criado com sucesso",
         description: `Filme ${formValues.nome} foi criado.`,
         type: "success",
       });
-  
-      await buscarFilme(); // Atualiza a lista de filmes
-      setOpenDialog({ open: false }); // Fecha o diálogo
+
+      await buscarFilme();
+      setOpenDialog({ open: false });
     } catch (error) {
       console.error("Erro ao criar Filme:", error.response?.data || error.message);
       toaster.create({
@@ -197,26 +201,35 @@ export default function TasksFilme() {
           />
         </GridItem>
         <GridItem rowSpan={1}>
-            <InputCreate
-              fields={[
-                { name: "nome", placeholder: "Ex: Oppenheimer", title: "Título:" },
-                { name: "descricao", placeholder: "Ex: O físico J. Robert Oppenheimer trabalha com uma equipe de cientistas dur...", title: "Sinopse:" },
-                { name: "autor", placeholder: "Ex: Diretor", title: "Diretor:" },
-                { name: "duracao", placeholder: "Ex: 180 (em minutos)" ,title: "Duração:"},
-                { name: "imagemCartaz", placeholder: "Ex: URL da imagem", title: "Imagem:" },
-              ]}
-              submit={(formValues) => criarTask(formValues)} 
-              loadingSave={loadingSave}
-              open={openDialog}
-              setOpen={setOpenDialog}
-              header
-            />
-        </GridItem>
+  <InputCreate
+    fields={[
+      { name: "nome", placeholder: "Ex: Oppenheimer", title: "Título:" },
+      { name: "descricao", placeholder: "Ex: O físico J. Robert Oppenheimer trabalha com uma equipe de cientistas dur...", title: "Sinopse:" },
+      { name: "autor", placeholder: "Ex: Diretor", title: "Diretor:" },
+      { name: "duracao", placeholder: "Ex: 180 (em minutos)", title: "Duração:" },
+      {
+        name: "imagemCartaz",
+        title: "Imagem:",
+        type: "file",
+        render: () => (
+          <FileUpload
+            onFileSelect={(file) => setUploadedFile(file)} 
+          />
+        ),
+      },
+    ]}
+    submit={(formValues) => criarTask(formValues)}
+    loadingSave={loadingSave}
+    open={openDialog}
+    setOpen={setOpenDialog}
+    header
+  />
+</GridItem>
       </Grid>
       </Flex>
       <Stack style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         <TabelaCrudAll
-          items={tasksAtuais}
+          items={tasksAtuais} 
           headers={[
             { key: "id", label: "ID" },
             { key: "nome", label: "Título" },
@@ -226,10 +239,8 @@ export default function TasksFilme() {
             {
               key: "imagemCartaz",
               label: "Imagem",
-              render: (item) => (
-                <img src={item.imagemCartaz} alt={item.nome} style={{ width: "100px", height: "auto" }} />
-              ),
-            },
+              render: (item) => item.imagemCartaz,
+            }
           ]}
           onEdit={editarFilme}
           onDelete={excluirFilme}
